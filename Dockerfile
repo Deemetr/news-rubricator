@@ -28,7 +28,7 @@ RUN \
 RUN mkdir -p /var/lib/sphinx \
 	&& mkdir -p /var/lib/sphinx/data \
 	&& mkdir -p /var/log/sphinx \
-	&& mkdir -p /var/run/sphinx 
+	&& mkdir -p /var/run/sphinx \
 
   # Save MySQL client library
   && mv /usr/lib/libmysqlclient* /usr/local/lib \
@@ -60,7 +60,7 @@ RUN mkdir -p /var/lib/sphinx \
   # Removing build dependencies, clean temporary files
   && apk del .sphinx-build-dependencies \
   && rm -rf /var/cache/apk/* /var/tmp/* /tmp/*
-  
+
 COPY sphinx.conf /etc/sphinx/ 
 
 ENTRYPOINT ["tini", "--"]
