@@ -1,6 +1,6 @@
 import unittest
-from sklearn.externals import joblib
-from lematizer import get_lemma_text
+#from sklearn.externals import joblib
+#from lematizer import get_lemma_text
 
 def test_sample_single_word():
 
