@@ -1,23 +1,70 @@
-FROM alpine:3.3
-RUN apk add --update python3 py3-pip
-RUN apk del python2 py2-pip
+FROM alpine:edge
 
-# add work script
-ADD start.sh /
-ADD searchd.sh /
+ARG SPHINX_VERSION=2.2.11-release
 
-# install sphinxsearch   
-RUN echo "http://dl-5.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
-	&& apk --update --no-cache add sphinx \
-	&& mkdir -p /var/lib/sphinx \
+RUN \
+  apk add --update \
+    tini \
+
+  && addgroup -g 82 -S sphinx \
+  && adduser -u 82 -S -D -h /var/cache/sphinx -s /sbin/nologin -G sphinx sphinx
+
+RUN \
+  apk add --virtual .sphinx-build-dependencies \
+    curl \
+    expat-dev \
+    g++ \
+    gcc \
+    libre2-dev \
+    make \
+    mariadb-dev \
+    postgresql-dev \
+    snowball-dev \
+  && apk add --virtual .sphinx-runtime-dependencies \
+    expat \
+    libpq \
+    libstdc++ \
+
+RUN mkdir -p /var/lib/sphinx \
 	&& mkdir -p /var/lib/sphinx/data \
 	&& mkdir -p /var/log/sphinx \
-	&& mkdir -p /var/run/sphinx \
-	&& chmod a+x searchd.sh \
-	&& chmod a+x start.sh  
+	&& mkdir -p /var/run/sphinx 
 
-# run cron and seachd
-CMD ["./start.sh"]
+  # Save MySQL client library
+  && mv /usr/lib/libmysqlclient* /usr/local/lib \
+
+  # Sphinx
+  && SPHINX_SOURCE="http://sphinxsearch.com/files/sphinx-${SPHINX_VERSION}.tar.gz" \
+  && curl -fSL --connect-timeout 30 ${SPHINX_SOURCE} | tar xz -C /tmp \
+  && cd /tmp/sphinx-${SPHINX_VERSION} \
+
+  # Patches
+  && PAGESIZE_PATCH="http://git.alpinelinux.org/cgit/aports/plain/community/sphinx/sphinx-pagesize.patch" \
+  && curl -fSL --connect-timeout 30 ${PAGESIZE_PATCH} | patch -p1 -u \
+
+  && ./configure \
+    --prefix=/usr \
+    --exec-prefix=/usr \
+    --sysconfdir=/etc/sphinx \
+    --localstatedir=/var/lib/sphinx \
+    --enable-id64 \
+    --with-iconv \
+    --with-libexpat \
+    --with-libstemmer \
+    --with-mysql \
+    --with-pgsql \
+    --with-re2 \
+  && make -j $(getconf _NPROCESSORS_ONLN) \
+  && make install \
+
+  # Removing build dependencies, clean temporary files
+  && apk del .sphinx-build-dependencies \
+  && rm -rf /var/cache/apk/* /var/tmp/* /tmp/*
+  
+COPY sphinx.conf /etc/sphinx/ 
+
+ENTRYPOINT ["tini", "--"]
+CMD ["searchd"]
 
 COPY requirements.txt /src/requirements.txt
 RUN pip3 install -r /src/requirements.txt
