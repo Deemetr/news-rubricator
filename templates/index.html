@@ -76,7 +76,7 @@
             <div class="container">
                 <div class="row">
                     <div class="col-md-8 col-md-offset-2">
-                        <h1 class="brand-heading">Grayscale</h1>
+                        <h1 class="brand-heading">SVM Рубрикатор</h1>
                         <p class="intro-text">Просто сервис рубрикации
                             <br>
                         <a href="#about" class="btn btn-circle page-scroll">
@@ -93,8 +93,13 @@
         <div class="row">
             <div class="col-lg-8 col-lg-offset-2">
                 <h2>О сервисе</h2>
-                <p>Позволяет определить рубрику новости по её тексту</p>
-                <p>Здесь будет описание api</p>
+                <p>Рубрикатор реализован с использованием:</p>                
+                <p>библиотеки для машинного обучения <a href="http://scikit-learn.org/stable/index.html">scikit-learn</a>; поискового движка <a href="http://sphinxsearch.com">sphinx</a>; 
+                    парсера для синтаксического разбора HTML <a href="https://www.crummy.com/software/BeautifulSoup/">BeautifulSoup</a>; библиотеки для анализа данных <a href="http://pandas.pydata.org">pandas</a>
+                </p>
+                <p>Использовался метод обучения с учителем - Метод опорных векторов (<a href="http://scikit-learn.org/stable/modules/svm.html">Support vector machines</a> )
+                Корпус состоял из 25000 различных новостей 8 рубрик: Политика, Общество, Экономика, Происшествия, Спорт, Наука, Культура, Религия.
+                </p>
             </div>
         </div>
     </section>

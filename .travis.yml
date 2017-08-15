@@ -1,0 +1,14 @@
+sudo: required
+
+services:
+  - docker
+
+language: python
+script:
+  - python -m pytest -v
+matrix:
+  include:
+      - python: 3.6.0
+      
+after_success:
+  - sh .travis/deploy_dockerhub.sh
